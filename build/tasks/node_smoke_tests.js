@@ -5,7 +5,7 @@ module.exports = function( grunt ) {
 	var fs = require( "fs" ),
 		spawnTest = require( "./lib/spawn_test.js" ),
 		testsDir = "./test/node_smoke_tests/",
-		nodeSmokeTests = [ "jsdom", "babel:nodeSmokeTests" ];
+		nodeSmokeTests = [ "babel:nodeSmokeTests" ];
 
 	// Fire up all tests defined in test/node_smoke_tests/*.js in spawned sub-processes.
 	// All the files under test/node_smoke_tests/*.js are supposed to exit with 0 code
@@ -22,7 +22,7 @@ module.exports = function( grunt ) {
 			var taskName = "node_" + testFilePath.replace( /\.js$/, "" );
 
 			grunt.registerTask( taskName, function() {
-				spawnTest( this.async(), "test/node_smoke_tests/" + testFilePath );
+				spawnTest( this.async(), "node \"test/node_smoke_tests/" + testFilePath + "\"" );
 			} );
 
 			nodeSmokeTests.push( taskName );

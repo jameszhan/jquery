@@ -1,9 +1,12 @@
-define([
+define( [
 	"./core",
 	"./core/access",
+	"./core/camelCase",
 	"./data/var/dataPriv",
 	"./data/var/dataUser"
-], function( jQuery, access, dataPriv, dataUser ) {
+], function( jQuery, access, camelCase, dataPriv, dataUser ) {
+
+"use strict";
 
 //	Implementation Summary
 //
@@ -18,6 +21,31 @@ define([
 var rbrace = /^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,
 	rmultiDash = /[A-Z]/g;
 
+function getData( data ) {
+	if ( data === "true" ) {
+		return true;
+	}
+
+	if ( data === "false" ) {
+		return false;
+	}
+
+	if ( data === "null" ) {
+		return null;
+	}
+
+	// Only convert to a number if it doesn't change the string
+	if ( data === +data + "" ) {
+		return +data;
+	}
+
+	if ( rbrace.test( data ) ) {
+		return JSON.parse( data );
+	}
+
+	return data;
+}
+
 function dataAttr( elem, key, data ) {
 	var name;
 
@@ -29,13 +57,7 @@ function dataAttr( elem, key, data ) {
 
 		if ( typeof data === "string" ) {
 			try {
-				data = data === "true" ? true :
-					data === "false" ? false :
-					data === "null" ? null :
-					// Only convert to a number if it doesn't change the string
-					+data + "" === data ? +data :
-					rbrace.test( data ) ? jQuery.parseJSON( data ) :
-					data;
+				data = getData( data );
 			} catch ( e ) {}
 
 			// Make sure we set the data so it isn't changed later
@@ -47,7 +69,7 @@ function dataAttr( elem, key, data ) {
 	return data;
 }
 
-jQuery.extend({
+jQuery.extend( {
 	hasData: function( elem ) {
 		return dataUser.hasData( elem ) || dataPriv.hasData( elem );
 	},
@@ -69,9 +91,9 @@ jQuery.extend({
 	_removeData: function( elem, name ) {
 		dataPriv.remove( elem, name );
 	}
-});
+} );
 
-jQuery.fn.extend({
+jQuery.fn.extend( {
 	data: function( key, value ) {
 		var i, name, data,
 			elem = this[ 0 ],
@@ -86,12 +108,12 @@ jQuery.fn.extend({
 					i = attrs.length;
 					while ( i-- ) {
 
-						// Support: IE11+
+						// Support: IE 11 only
 						// The attrs elements can be null (#14894)
 						if ( attrs[ i ] ) {
 							name = attrs[ i ].name;
 							if ( name.indexOf( "data-" ) === 0 ) {
-								name = jQuery.camelCase( name.slice(5) );
+								name = camelCase( name.slice( 5 ) );
 								dataAttr( elem, name, data[ name ] );
 							}
 						}
@@ -105,9 +127,9 @@ jQuery.fn.extend({
 
 		// Sets multiple values
 		if ( typeof key === "object" ) {
-			return this.each(function() {
+			return this.each( function() {
 				dataUser.set( this, key );
-			});
+			} );
 		}
 
 		return access( this, function( value ) {
@@ -139,20 +161,20 @@ jQuery.fn.extend({
 			}
 
 			// Set the data...
-			this.each(function() {
+			this.each( function() {
 
 				// We always store the camelCased key
 				dataUser.set( this, key, value );
-			});
+			} );
 		}, null, value, arguments.length > 1, null, true );
 	},
 
 	removeData: function( key ) {
-		return this.each(function() {
+		return this.each( function() {
 			dataUser.remove( this, key );
-		});
+		} );
 	}
-});
+} );
 
 return jQuery;
-});
+} );
